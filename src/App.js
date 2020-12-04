@@ -1,24 +1,60 @@
 import logo from './logo.svg';
 import './App.css';
+import ReactDOM from 'react-dom'
+import React, { useRef, useState, Fragment } from 'react'
+import { Canvas, useFrame } from 'react-three-fiber'
+
+import './styles.css'
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+ 
+
+function Box(props) {
+  // This reference will give us direct access to the mesh
+  const mesh = useRef()
+  // Set up state for the hovered and active state
+  const [hovered, setHover] = useState(false)
+  const [active, setActive] = useState(false)
+
+  // Rotate mesh every frame, this is outside of React without overhead
+  useFrame(() => {
+    if (hovered && !active) {
+      mesh.current.rotation.z += 0.01
+      mesh.current.rotation.x += 0.01
+    }
+    if (hovered && active) {
+      mesh.current.rotation.y += 0.02
+      mesh.current.rotation.x += 0.06
+    }
+  })
+
+  return (
+    <mesh
+      {...props}
+      ref={mesh}
+      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
+      onClick={e => setActive(!active)}
+      onPointerOver={e => setHover(true)}
+      onPointerOut={e => setHover(false)}>
+      <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
+      <meshStandardMaterial attach="material" color={hovered ? 'hotpink' : 'orange'} />
+    </mesh>
+  )
+}
+
+ReactDOM.render(
+  <Fragment>
+    <h1>Hello Medium this is react-three-fiber!</h1>
+    <Canvas>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+      <Box position={[-1.2, 0, 0]} />
+      <Box position={[1.2, 0, 0]} />
+    </Canvas>
+  </Fragment>,
+  document.getElementById('root')
+)
   );
 }
 

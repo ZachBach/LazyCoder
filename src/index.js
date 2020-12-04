@@ -1,17 +1,54 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React, { useRef, useState, Fragment } from 'react';
+import { Canvas, useFrame } from 'react-three-fiber';
+
+import './styles.css';
+
+function Box(props) {
+  // This reference will give us direct access to the mesh
+  const mesh = useRef();
+  // Set up state for the hovered and active state
+  const [hovered, setHover] = useState(false);
+  const [active, setActive] = useState(false);
+
+  // Rotate mesh every frame, this is outside of React without overhead
+  useFrame(() => {
+    if (hovered && !active) {
+      mesh.current.rotation.z += 0.01;
+      mesh.current.rotation.x += 0.01;
+    }
+    if (hovered && active) {
+      mesh.current.rotation.y += 0.02;
+      mesh.current.rotation.x += 0.06;
+    }
+  });
+
+  return (
+    <mesh
+      {...props}
+      ref={mesh}
+      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
+      onClick={(e) => setActive(!active)}
+      onPointerOver={(e) => setHover(true)}
+      onPointerOut={(e) => setHover(false)}>
+      <boxBufferGeometry attach='geometry' args={[1, 1, 1]} />
+      <meshStandardMaterial
+        attach='material'
+        color={hovered ? 'hotpink' : 'orange'}
+      />
+    </mesh>
+  );
+}
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <Fragment>
+    <h1>3D Box Objects</h1>
+    <Canvas>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+      <Box position={[-1.2, 0, 0]} />
+      <Box position={[1.2, 0, 0]} />
+    </Canvas>
+  </Fragment>,
   document.getElementById('root')
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
